@@ -160,15 +160,23 @@ open class MessageViewController: UIViewController, MessageAutocompleteControlle
         guard let keyboardFrame = notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? CGRect,
             let animationDuration = notification.userInfo?[UIKeyboardAnimationDurationUserInfoKey] as? TimeInterval
             else { return }
+    
+        let rawAnimationCurve = (notification.userInfo![UIKeyboardAnimationCurveUserInfoKey] as! NSNumber).uint32Value << 16
+        let animationCurve = UIViewAnimationOptions(rawValue: UInt(rawAnimationCurve))
+        
+        let previousKeyboardHeight = keyboardHeight
+        
+        if let rootView = view.window?.rootViewController?.view {
+            let convertedKeyboardFrame = view.convert(keyboardFrame, from: rootView)
+            keyboardHeight = view.bounds.height - convertedKeyboardFrame.minY
+        } else {
+            keyboardHeight = keyboardFrame.height
+        }
 
         scrollView?.stopScrolling()
         keyboardState = .showing
 
-        let previousKeyboardHeight = keyboardHeight
-        keyboardHeight = keyboardFrame.height
-        messageView.heightOffset = keyboardHeight + (scrollView?.util_safeAreaInsets.top ?? 0)
-        
-        UIView.animate(withDuration: animationDuration) {
+        UIView.animate(withDuration: animationDuration, delay: 0.0, options: [.beginFromCurrentState, animationCurve], animations: {
             guard let scrollView = self.scrollView else { return }
             // capture before changing the frame which might have weird side effects
             let contentOffset = scrollView.contentOffset
@@ -188,7 +196,7 @@ open class MessageViewController: UIViewController, MessageAutocompleteControlle
                 -topInset
             )
             scrollView.contentOffset = CGPoint(x: contentOffset.x, y: newOffset)
-        }
+        })
     }
 
     @objc internal func keyboardDidShow(notification: Notification) {
