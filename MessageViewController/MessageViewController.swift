@@ -11,7 +11,7 @@ import UIKit
 open class MessageViewController: UIViewController, MessageAutocompleteControllerLayoutDelegate {
 
     public let messageView = MessageView()
-    public private(set) lazy var messageAutocompleteController: MessageAutocompleteController = {
+    public lazy var messageAutocompleteController: MessageAutocompleteController? = {
         return MessageAutocompleteController(textView: self.messageView.textView)
     }()
     public var cacheKey: String?
@@ -56,9 +56,9 @@ open class MessageViewController: UIViewController, MessageAutocompleteControlle
     }
 
     public var borderColor: UIColor? {
-        get { return messageAutocompleteController.borderColor }
+        get { return messageAutocompleteController?.borderColor }
         set {
-            messageAutocompleteController.borderColor = newValue
+            messageAutocompleteController?.borderColor = newValue
             messageView.topBorderLayer.backgroundColor = newValue?.cgColor
         }
     }
@@ -86,8 +86,8 @@ open class MessageViewController: UIViewController, MessageAutocompleteControlle
 
     internal func commonInit() {
         messageView.delegate = self
-        messageAutocompleteController.layoutDelegate = self
 
+        messageAutocompleteController?.layoutDelegate = self
         let notificationCenter = NotificationCenter.default
         notificationCenter.addObserver(self, selector: #selector(keyboardWillShow(notification:)), name: .UIKeyboardWillShow, object: nil)
         notificationCenter.addObserver(self, selector: #selector(keyboardDidShow(notification:)), name: .UIKeyboardDidShow, object: nil)
@@ -130,7 +130,7 @@ open class MessageViewController: UIViewController, MessageAutocompleteControlle
             height: messageViewFrame.minY
         )
 
-        messageAutocompleteController.layout(in: view, bottomY: messageViewFrame.minY)
+        messageAutocompleteController?.layout(in: view, bottomY: messageViewFrame.minY)
     }
 
     internal var fullCacheKey: String? {
